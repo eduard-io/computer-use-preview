@@ -25,6 +25,8 @@ from google.genai.types import (
     FinishReason,
 )
 import time
+from datetime import datetime
+from pathlib import Path
 from rich.console import Console
 from rich.table import Table
 
@@ -45,6 +47,7 @@ PREDEFINED_COMPUTER_USE_FUNCTIONS = [
     "navigate",
     "key_combination",
     "drag_and_drop",
+    "take_screenshot",
 ]
 
 
@@ -67,12 +70,24 @@ class BrowserAgent:
         query: str,
         model_name: str,
         verbose: bool = True,
+        save_screenshots: bool = False,
     ):
         self._browser_computer = browser_computer
         self._query = query
         self._model_name = model_name
         self._verbose = verbose
+        self._save_screenshots = save_screenshots
         self.final_reasoning = None
+        self._screenshot_counter = 0
+        
+        # Create screenshots directory if saving is enabled
+        if self._save_screenshots:
+            self._screenshots_dir = Path("screenshots")
+            self._screenshots_dir.mkdir(exist_ok=True)
+            # Create a subdirectory with timestamp for this session
+            session_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            self._session_dir = self._screenshots_dir / session_timestamp
+            self._session_dir.mkdir(exist_ok=True)
         self._client = genai.Client(
             api_key=os.environ.get("GEMINI_API_KEY"),
             vertexai=os.environ.get("USE_VERTEXAI", "0").lower() in ["true", "1"],
@@ -187,6 +202,8 @@ class BrowserAgent:
                 destination_x=destination_x,
                 destination_y=destination_y,
             )
+        elif action.name == "take_screenshot":
+            return self._browser_computer.current_state()
         # Handle the custom function declarations here.
         elif action.name == multiply_numbers.__name__:
             return multiply_numbers(x=action.args["x"], y=action.args["y"])
@@ -327,6 +344,10 @@ class BrowserAgent:
             else:
                 fc_result = self.handle_action(function_call)
             if isinstance(fc_result, EnvState):
+                # Save screenshot if enabled
+                if self._save_screenshots:
+                    self._save_screenshot(fc_result, function_call.name)
+                
                 function_responses.append(
                     FunctionResponse(
                         name=function_call.name,
@@ -414,3 +435,29 @@ class BrowserAgent:
 
     def denormalize_y(self, y: int) -> int:
         return int(y / 1000 * self._browser_computer.screen_size()[1])
+    
+    def _save_screenshot(self, env_state: EnvState, action_name: str):
+        """Save a screenshot to the local filesystem."""
+        if not self._save_screenshots:
+            return
+        
+        self._screenshot_counter += 1
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        
+        # Create a safe filename from the URL
+        url_safe = "".join(c for c in env_state.url if c.isalnum() or c in ('-', '_', '.'))[:50]
+        if not url_safe:
+            url_safe = "unknown"
+        
+        # Format: counter_timestamp_action_url.png
+        filename = f"{self._screenshot_counter:04d}_{timestamp}_{action_name}_{url_safe}.png"
+        filepath = self._session_dir / filename
+        
+        with open(filepath, "wb") as f:
+            f.write(env_state.screenshot)
+        
+        if self._verbose:
+            termcolor.cprint(
+                f"Screenshot saved: {filepath}",
+                color="green",
+            )

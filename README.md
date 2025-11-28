@@ -117,6 +117,16 @@ Runs the agent using Browserbase as the browser backend. Ensure the proper Brows
 python main.py --query="Go to Google and type 'Hello World' into the search bar" --env="browserbase"
 ```
 
+**Saving Screenshots**
+
+To save screenshots locally for debugging or documentation purposes, use the `--save_screenshots` flag. Screenshots will be saved in a `screenshots/` directory, with each session creating a timestamped subdirectory:
+
+```bash
+python main.py --query="Go to Google and search for Python" --save_screenshots
+```
+
+Screenshots are saved with descriptive filenames including the action name, timestamp, and URL, making it easy to review the agent's behavior step by step.
+
 ## Agent CLI
 
 The `main.py` script is the command-line interface (CLI) for running the browser agent.
@@ -129,6 +139,7 @@ The `main.py` script is the command-line interface (CLI) for running the browser
 | `--env` | The computer use environment to use. Must be one of the following: `playwright`, or `browserbase` | No | N/A | All |
 | `--initial_url` | The initial URL to load when the browser starts. | No | https://www.google.com | All |
 | `--highlight_mouse` | If specified, the agent will attempt to highlight the mouse cursor's position in the screenshots. This is useful for visual debugging. | No | False (not highlighted) | `playwright` |
+| `--save_screenshots` | If specified, screenshots will be saved locally to a `screenshots` directory. Each session creates a timestamped subdirectory containing all screenshots from that run. | No | False (not saved) | All |
 
 ### Environment Variables
 

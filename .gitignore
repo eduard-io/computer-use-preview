@@ -175,3 +175,9 @@ cython_debug/
 
 # Node stuff
 node_modules/
+
+# Screenshots
+screenshots/
+
+# macOS
+.DS_Store

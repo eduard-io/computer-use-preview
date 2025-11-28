@@ -54,6 +54,12 @@ def main() -> int:
         default='gemini-2.5-computer-use-preview-10-2025',
         help="Set which main model to use.",
     )
+    parser.add_argument(
+        "--save_screenshots",
+        action="store_true",
+        default=False,
+        help="Save screenshots locally to a 'screenshots' directory.",
+    )
     args = parser.parse_args()
 
     if args.env == "playwright":
@@ -75,6 +81,7 @@ def main() -> int:
             browser_computer=browser_computer,
             query=args.query,
             model_name=args.model,
+            save_screenshots=args.save_screenshots,
         )
         agent.agent_loop()
     return 0
