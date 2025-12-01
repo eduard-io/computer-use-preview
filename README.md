@@ -84,9 +84,29 @@ The primary way to use the tool is via the `main.py` script.
 
 **General Command Structure:**
 
+You can provide the query in multiple ways:
+
+1. **As a positional argument (string):**
+```bash
+python main.py "Go to Google and type 'Hello World' into the search bar"
+```
+
+2. **As a positional argument (file):**
+```bash
+python main.py sample-query.md
+```
+
+3. **Using the --query flag (string):**
 ```bash
 python main.py --query "Go to Google and type 'Hello World' into the search bar"
 ```
+
+4. **Using the --query flag (file):**
+```bash
+python main.py --query sample-query.md
+```
+
+The query can be provided as a string directly or as a path to a text file (`.txt`, `.md`, or any extension). If a file path is detected, the contents of the file will be read and used as the query.
 
 **Available Environments:**
 
@@ -100,18 +120,30 @@ You can specify a particular environment with the ```--env <environment>``` flag
 Runs the agent using a Chrome browser instance controlled locally by Playwright.
 
 ```bash
+python main.py "Go to Google and type 'Hello World' into the search bar" --env="playwright"
+```
+
+Or using the --query flag:
+
+```bash
 python main.py --query="Go to Google and type 'Hello World' into the search bar" --env="playwright"
 ```
 
 You can also specify an initial URL for the Playwright environment:
 
 ```bash
-python main.py --query="Go to Google and type 'Hello World' into the search bar" --env="playwright" --initial_url="https://www.google.com/search?q=latest+AI+news"
+python main.py "Go to Google and type 'Hello World' into the search bar" --env="playwright" --initial_url="https://www.google.com/search?q=latest+AI+news"
 ```
 
 **Browserbase**
 
 Runs the agent using Browserbase as the browser backend. Ensure the proper Browserbase environment variables are set:`BROWSERBASE_API_KEY` and `BROWSERBASE_PROJECT_ID`.
+
+```bash
+python main.py "Go to Google and type 'Hello World' into the search bar" --env="browserbase"
+```
+
+Or using the --query flag:
 
 ```bash
 python main.py --query="Go to Google and type 'Hello World' into the search bar" --env="browserbase"
@@ -120,6 +152,12 @@ python main.py --query="Go to Google and type 'Hello World' into the search bar"
 **Saving Screenshots**
 
 To save screenshots locally for debugging or documentation purposes, use the `--save_screenshots` flag. Screenshots will be saved in a `screenshots/` directory, with each session creating a timestamped subdirectory:
+
+```bash
+python main.py "Go to Google and search for Python" --save_screenshots
+```
+
+Or using the --query flag:
 
 ```bash
 python main.py --query="Go to Google and search for Python" --save_screenshots
@@ -135,7 +173,10 @@ The `main.py` script is the command-line interface (CLI) for running the browser
 
 | Argument | Description | Required | Default | Supported Environment(s) |
 |-|-|-|-|-|
-| `--query` | The natural language query for the browser agent to execute. | Yes | N/A | All |
+| `query` (positional) | The natural language query for the browser agent to execute. Can be a string or a file path. | Yes* | N/A | All |
+| `--query` | The natural language query for the browser agent to execute. Can be a string or a file path. Alternative to positional argument. | Yes* | N/A | All |
+
+\* Either the positional `query` argument or the `--query` flag must be provided. If a file path is provided, the file contents will be read and used as the query.
 | `--env` | The computer use environment to use. Must be one of the following: `playwright`, or `browserbase` | No | N/A | All |
 | `--initial_url` | The initial URL to load when the browser starts. | No | https://www.google.com | All |
 | `--highlight_mouse` | If specified, the agent will attempt to highlight the mouse cursor's position in the screenshots. This is useful for visual debugging. | No | False (not highlighted) | `playwright` |

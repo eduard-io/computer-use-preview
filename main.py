@@ -24,10 +24,18 @@ PLAYWRIGHT_SCREEN_SIZE = (1440, 900)
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run the browser agent with a query.")
     parser.add_argument(
+        "query",
+        type=str,
+        nargs="?",
+        default=None,
+        help="The query for the browser agent to execute (can be a string or a file path).",
+    )
+    parser.add_argument(
         "--query",
         type=str,
-        required=True,
-        help="The query for the browser agent to execute.",
+        dest="query_flag",
+        default=None,
+        help="The query for the browser agent to execute (can be a string or a file path). Alternative to positional argument.",
     )
 
     parser.add_argument(
@@ -62,6 +70,20 @@ def main() -> int:
     )
     args = parser.parse_args()
 
+    # Determine query source (positional or --query flag)
+    query_value = args.query_flag if args.query_flag is not None else args.query
+
+    # Ensure at least one query source is provided
+    if query_value is None:
+        parser.error("Query is required. Provide it as a positional argument or use --query flag.")
+
+    # Check if query is a file path and read it, otherwise use as string
+    if os.path.isfile(query_value):
+        with open(query_value, "r", encoding="utf-8") as f:
+            query = f.read().strip()
+    else:
+        query = query_value
+
     if args.env == "playwright":
         env = PlaywrightComputer(
             screen_size=PLAYWRIGHT_SCREEN_SIZE,
@@ -79,7 +101,7 @@ def main() -> int:
     with env as browser_computer:
         agent = BrowserAgent(
             browser_computer=browser_computer,
-            query=args.query,
+            query=query,
             model_name=args.model,
             save_screenshots=args.save_screenshots,
         )
