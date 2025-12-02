@@ -19,6 +19,7 @@ from computers import BrowserbaseComputer, PlaywrightComputer
 
 
 PLAYWRIGHT_SCREEN_SIZE = (1440, 900)
+MOBILE_SCREEN_SIZE = (390, 844)
 
 
 def main() -> int:
@@ -68,6 +69,12 @@ def main() -> int:
         default=False,
         help="Save screenshots locally to a 'screenshots' directory.",
     )
+    parser.add_argument(
+        "--mobile",
+        action="store_true",
+        default=False,
+        help="Enable mobile device emulation (mobile resolution and behavior).",
+    )
     args = parser.parse_args()
 
     # Determine query source (positional or --query flag)
@@ -84,16 +91,20 @@ def main() -> int:
     else:
         query = query_value
 
+    screen_size = MOBILE_SCREEN_SIZE if args.mobile else PLAYWRIGHT_SCREEN_SIZE
+    
     if args.env == "playwright":
         env = PlaywrightComputer(
-            screen_size=PLAYWRIGHT_SCREEN_SIZE,
+            screen_size=screen_size,
             initial_url=args.initial_url,
             highlight_mouse=args.highlight_mouse,
+            mobile=args.mobile,
         )
     elif args.env == "browserbase":
         env = BrowserbaseComputer(
-            screen_size=PLAYWRIGHT_SCREEN_SIZE,
-            initial_url=args.initial_url
+            screen_size=screen_size,
+            initial_url=args.initial_url,
+            mobile=args.mobile,
         )
     else:
         raise ValueError("Unknown environment: ", args.env)

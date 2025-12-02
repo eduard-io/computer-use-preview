@@ -23,8 +23,9 @@ class BrowserbaseComputer(PlaywrightComputer):
         self,
         screen_size: tuple[int, int],
         initial_url: str = "https://www.google.com",
+        mobile: bool = False,
     ):
-        super().__init__(screen_size, initial_url)
+        super().__init__(screen_size, initial_url, mobile=mobile)
 
     def __enter__(self):
         print("Creating session...")
@@ -34,22 +35,37 @@ class BrowserbaseComputer(PlaywrightComputer):
             api_key=os.environ["BROWSERBASE_API_KEY"]
         )
 
+        browser_settings = {
+            "viewport": {
+                "width": self._screen_size[0],
+                "height": self._screen_size[1],
+            },
+        }
+        
+        if self._mobile:
+            # Mobile device settings
+            browser_settings["fingerprint"] = {
+                "screen": {
+                    "maxWidth": self._screen_size[0],
+                    "maxHeight": self._screen_size[1],
+                    "minWidth": self._screen_size[0],
+                    "minHeight": self._screen_size[1],
+                },
+            }
+        else:
+            # Desktop device settings
+            browser_settings["fingerprint"] = {
+                "screen": {
+                    "maxWidth": 1920,
+                    "maxHeight": 1080,
+                    "minWidth": 1024,
+                    "minHeight": 768,
+                },
+            }
+        
         self._session = self._browserbase.sessions.create(
             project_id=os.environ["BROWSERBASE_PROJECT_ID"],
-            browser_settings={
-                "fingerprint": {
-                    "screen": {
-                        "maxWidth": 1920,
-                        "maxHeight": 1080,
-                        "minWidth": 1024,
-                        "minHeight": 768,
-                    },
-                },
-                "viewport": {
-                    "width": self._screen_size[0],
-                    "height": self._screen_size[1],
-                },
-            },
+            browser_settings=browser_settings,
         )
 
         self._browser = self._playwright.chromium.connect_over_cdp(

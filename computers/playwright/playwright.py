@@ -81,11 +81,13 @@ class PlaywrightComputer(Computer):
         initial_url: str = "https://www.google.com",
         search_engine_url: str = "https://www.google.com",
         highlight_mouse: bool = False,
+        mobile: bool = False,
     ):
         self._initial_url = initial_url
         self._screen_size = screen_size
         self._search_engine_url = search_engine_url
         self._highlight_mouse = highlight_mouse
+        self._mobile = mobile
 
     def _handle_new_page(self, new_page: playwright.sync_api.Page):
         """The Computer Use model only supports a single tab at the moment.
@@ -113,12 +115,23 @@ class PlaywrightComputer(Computer):
             ],
             headless=bool(os.environ.get("PLAYWRIGHT_HEADLESS", False)),
         )
-        self._context = self._browser.new_context(
-            viewport={
+        context_options = {
+            "viewport": {
                 "width": self._screen_size[0],
                 "height": self._screen_size[1],
             }
-        )
+        }
+        
+        if self._mobile:
+            # Mobile device emulation settings
+            context_options.update({
+                "is_mobile": True,
+                "has_touch": True,
+                "device_scale_factor": 2,
+                "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1",
+            })
+        
+        self._context = self._browser.new_context(**context_options)
         self._page = self._context.new_page()
         self._page.goto(self._initial_url)
 

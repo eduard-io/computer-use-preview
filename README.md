@@ -165,6 +165,26 @@ python main.py --query="Go to Google and search for Python" --save_screenshots
 
 Screenshots are saved with descriptive filenames including the action name, timestamp, and URL, making it easy to review the agent's behavior step by step.
 
+**Mobile Device Emulation**
+
+To simulate a mobile device environment (mobile resolution and behavior), use the `--mobile` flag. This enables mobile device emulation with a mobile viewport size (390x844), touch events, and a mobile user agent:
+
+```bash
+python main.py "Go to Google and search for mobile apps" --mobile
+```
+
+Or using the --query flag:
+
+```bash
+python main.py --query="Go to Google and search for mobile apps" --mobile
+```
+
+You can combine the `--mobile` flag with other options:
+
+```bash
+python main.py "Test mobile website" --mobile --env="playwright" --save_screenshots
+```
+
 ## Agent CLI
 
 The `main.py` script is the command-line interface (CLI) for running the browser agent.
@@ -181,6 +201,7 @@ The `main.py` script is the command-line interface (CLI) for running the browser
 | `--initial_url` | The initial URL to load when the browser starts. | No | https://www.google.com | All |
 | `--highlight_mouse` | If specified, the agent will attempt to highlight the mouse cursor's position in the screenshots. This is useful for visual debugging. | No | False (not highlighted) | `playwright` |
 | `--save_screenshots` | If specified, screenshots will be saved locally to a `screenshots` directory. Each session creates a timestamped subdirectory containing all screenshots from that run. | No | False (not saved) | All |
+| `--mobile` | If specified, enables mobile device emulation with mobile screen resolution (390x844), touch events, and mobile user agent. | No | False (desktop mode) | All |
 
 ### Environment Variables
 
