@@ -47,7 +47,6 @@ PREDEFINED_COMPUTER_USE_FUNCTIONS = [
     "navigate",
     "key_combination",
     "drag_and_drop",
-    "take_screenshot",
 ]
 
 
@@ -61,6 +60,21 @@ FunctionResponseT = Union[EnvState, dict]
 def multiply_numbers(x: float, y: float) -> dict:
     """Multiplies two numbers."""
     return {"result": x * y}
+
+
+def take_screenshot(filename: str) -> dict:
+    """Takes a screenshot of the current browser state and saves it with the specified filename.
+    
+    Note: This function is used only for generating the function declaration for the AI model.
+    The actual implementation that saves the file is in BrowserAgent.handle_action().
+    
+    Args:
+        filename: The filename to save the screenshot as (e.g., "screenshot.png")
+    
+    Returns:
+        A dictionary with success status and the filename.
+    """
+    return {"success": True, "filename": filename}
 
 
 class BrowserAgent:
@@ -111,6 +125,9 @@ class BrowserAgent:
             # For example:
             types.FunctionDeclaration.from_callable(
                 client=self._client, callable=multiply_numbers
+            ),
+            types.FunctionDeclaration.from_callable(
+                client=self._client, callable=take_screenshot
             )
         ]
 
@@ -202,9 +219,28 @@ class BrowserAgent:
                 destination_x=destination_x,
                 destination_y=destination_y,
             )
-        elif action.name == "take_screenshot":
-            return self._browser_computer.current_state()
         # Handle the custom function declarations here.
+        elif action.name == "take_screenshot":
+            # Get the current state (screenshot)
+            env_state = self._browser_computer.current_state()
+            
+            # Extract and sanitize filename
+            filename = action.args.get("filename", "screenshot.png")
+            sanitized_filename = self._sanitize_filename(filename)
+            
+            # Save screenshot to current working directory
+            filepath = Path.cwd() / sanitized_filename
+            with open(filepath, "wb") as f:
+                f.write(env_state.screenshot)
+            
+            if self._verbose:
+                termcolor.cprint(
+                    f"Screenshot saved: {filepath}",
+                    color="green",
+                )
+            
+            # Return EnvState so it works like other computer use functions
+            return env_state
         elif action.name == multiply_numbers.__name__:
             return multiply_numbers(x=action.args["x"], y=action.args["y"])
         else:
@@ -435,6 +471,37 @@ class BrowserAgent:
 
     def denormalize_y(self, y: int) -> int:
         return int(y / 1000 * self._browser_computer.screen_size()[1])
+    
+    def _sanitize_filename(self, filename: str) -> str:
+        """Sanitize filename to prevent path traversal and ensure safe file names.
+        
+        Args:
+            filename: The original filename
+            
+        Returns:
+            A sanitized filename safe for use in file operations
+        """
+        # Remove path separators and path traversal attempts
+        sanitized = filename.replace("/", "_").replace("\\", "_")
+        sanitized = sanitized.replace("..", "_")
+        
+        # Remove any leading/trailing whitespace and dots
+        sanitized = sanitized.strip(" .")
+        
+        # If empty after sanitization, use default
+        if not sanitized:
+            sanitized = "screenshot.png"
+        
+        # Ensure it has an extension (default to .png if missing)
+        if "." not in sanitized:
+            sanitized += ".png"
+        
+        # Limit length to reasonable size
+        if len(sanitized) > 255:
+            name, ext = os.path.splitext(sanitized)
+            sanitized = name[:250] + ext
+        
+        return sanitized
     
     def _save_screenshot(self, env_state: EnvState, action_name: str):
         """Save a screenshot to the local filesystem."""
