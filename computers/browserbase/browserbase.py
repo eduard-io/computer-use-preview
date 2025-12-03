@@ -24,11 +24,13 @@ class BrowserbaseComputer(PlaywrightComputer):
         screen_size: tuple[int, int],
         initial_url: str = "https://www.google.com",
         mobile: bool = False,
+        print_mode: bool = False,
     ):
-        super().__init__(screen_size, initial_url, mobile=mobile)
+        super().__init__(screen_size, initial_url, mobile=mobile, print_mode=print_mode)
 
     def __enter__(self):
-        print("Creating session...")
+        if not self._print_mode:
+            print("Creating session...")
 
         self._playwright = sync_playwright().start()
         self._browserbase = browserbase.Browserbase(
@@ -77,11 +79,12 @@ class BrowserbaseComputer(PlaywrightComputer):
 
         self._context.on("page", self._handle_new_page)
 
-        termcolor.cprint(
-            f"Session started at https://browserbase.com/sessions/{self._session.id}",
-            color="green",
-            attrs=["bold"],
-        )
+        if not self._print_mode:
+            termcolor.cprint(
+                f"Session started at https://browserbase.com/sessions/{self._session.id}",
+                color="green",
+                attrs=["bold"],
+            )
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):

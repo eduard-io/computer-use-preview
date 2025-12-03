@@ -75,6 +75,12 @@ def main() -> int:
         default=False,
         help="Enable mobile device emulation (mobile resolution and behavior).",
     )
+    parser.add_argument(
+        "--print",
+        action="store_true",
+        default=False,
+        help="Output only the final agent reasoning message in a clean, pipeable format.",
+    )
     args = parser.parse_args()
 
     # Determine query source (positional or --query flag)
@@ -99,12 +105,14 @@ def main() -> int:
             initial_url=args.initial_url,
             highlight_mouse=args.highlight_mouse,
             mobile=args.mobile,
+            print_mode=args.print,
         )
     elif args.env == "browserbase":
         env = BrowserbaseComputer(
             screen_size=screen_size,
             initial_url=args.initial_url,
             mobile=args.mobile,
+            print_mode=args.print,
         )
     else:
         raise ValueError("Unknown environment: ", args.env)
@@ -115,8 +123,12 @@ def main() -> int:
             query=query,
             model_name=args.model,
             save_screenshots=args.save_screenshots,
+            verbose=not args.print,
+            print_mode=args.print,
         )
         agent.agent_loop()
+        if args.print:
+            print(agent.final_reasoning or "")
     return 0
 
 

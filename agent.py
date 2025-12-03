@@ -85,12 +85,14 @@ class BrowserAgent:
         model_name: str,
         verbose: bool = True,
         save_screenshots: bool = False,
+        print_mode: bool = False,
     ):
         self._browser_computer = browser_computer
         self._query = query
         self._model_name = model_name
-        self._verbose = verbose
+        self._verbose = verbose if not print_mode else False
         self._save_screenshots = save_screenshots
+        self._print_mode = print_mode
         self.final_reasoning = None
         self._screenshot_counter = 0
         
@@ -336,7 +338,8 @@ class BrowserAgent:
             return "CONTINUE"
 
         if not function_calls:
-            print(f"Agent Loop Complete: {reasoning}")
+            if not self._print_mode:
+                print(f"Agent Loop Complete: {reasoning}")
             self.final_reasoning = reasoning
             return "COMPLETE"
 

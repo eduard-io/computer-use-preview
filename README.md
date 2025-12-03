@@ -6,6 +6,7 @@
 - **📝 Flexible Query Input**: Pass queries directly as arguments (no `--query` flag required!) or point to text/markdown files to reuse prompts
 - **📱 Mobile Device Emulation**: Test mobile experiences with the `--mobile` flag, which simulates mobile viewport, touch events, and user agents
 - **🎯 Custom Screenshot Capture**: The agent can now call `take_screenshot(filename="name.png")` to save screenshots with custom names at any point during execution
+- **🖨️ Clean Output Mode**: Use `--print` to output only the final agent reasoning message in a clean, pipeable format (perfect for saving results to files)
 
 These enhancements make it easier to debug agent behavior, reuse prompts, and test across different device types—all while maintaining full compatibility with the original project.
 
@@ -196,6 +197,22 @@ You can combine the `--mobile` flag with other options:
 python main.py "Test mobile website" --mobile --env="playwright" --save_screenshots
 ```
 
+**Clean Output Mode**
+
+To output only the final agent reasoning message in a clean, pipeable format (suppressing all intermediate verbose output), use the `--print` flag. This is useful for saving results to files or processing output programmatically:
+
+```bash
+python main.py "Check if login button works" --print > qa_results.txt
+```
+
+Or using the --query flag:
+
+```bash
+python main.py --query="Check if login button works" --print > qa_results.txt
+```
+
+When `--print` is enabled, all verbose output (status messages, function calls, tables) is suppressed during execution, and only the final reasoning message is printed to stdout as plain text.
+
 ## Agent CLI
 
 The `main.py` script is the command-line interface (CLI) for running the browser agent.
@@ -213,6 +230,7 @@ The `main.py` script is the command-line interface (CLI) for running the browser
 | `--highlight_mouse` | If specified, the agent will attempt to highlight the mouse cursor's position in the screenshots. This is useful for visual debugging. | No | False (not highlighted) | `playwright` |
 | `--save_screenshots` | If specified, screenshots will be saved locally to a `screenshots` directory. Each session creates a timestamped subdirectory containing all screenshots from that run. | No | False (not saved) | All |
 | `--mobile` | If specified, enables mobile device emulation with mobile screen resolution (390x844), touch events, and mobile user agent. | No | False (desktop mode) | All |
+| `--print` | If specified, outputs only the final agent reasoning message in a clean, pipeable format. Suppresses all verbose output during execution. | No | False (verbose output) | All |
 
 ### Environment Variables
 

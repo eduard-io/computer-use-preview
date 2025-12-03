@@ -82,12 +82,14 @@ class PlaywrightComputer(Computer):
         search_engine_url: str = "https://www.google.com",
         highlight_mouse: bool = False,
         mobile: bool = False,
+        print_mode: bool = False,
     ):
         self._initial_url = initial_url
         self._screen_size = screen_size
         self._search_engine_url = search_engine_url
         self._highlight_mouse = highlight_mouse
         self._mobile = mobile
+        self._print_mode = print_mode
 
     def _handle_new_page(self, new_page: playwright.sync_api.Page):
         """The Computer Use model only supports a single tab at the moment.
@@ -100,7 +102,8 @@ class PlaywrightComputer(Computer):
         self._page.goto(new_url)
 
     def __enter__(self):
-        print("Creating session...")
+        if not self._print_mode:
+            print("Creating session...")
         self._playwright = sync_playwright().start()
         self._browser = self._playwright.chromium.launch(
             args=[
@@ -137,11 +140,12 @@ class PlaywrightComputer(Computer):
 
         self._context.on("page", self._handle_new_page)
 
-        termcolor.cprint(
-            f"Started local playwright.",
-            color="green",
-            attrs=["bold"],
-        )
+        if not self._print_mode:
+            termcolor.cprint(
+                f"Started local playwright.",
+                color="green",
+                attrs=["bold"],
+            )
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
