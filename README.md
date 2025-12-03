@@ -1,5 +1,16 @@
 # Computer Use Preview
 
+**This is an enhanced fork of [Google's Computer Use Preview](https://github.com/google/computer-use-preview) with additional features for easier usage and debugging.** This version includes several improvements to make the tool more flexible and developer-friendly:
+
+- **📸 Screenshot Saving**: Use `--save_screenshots` to automatically capture every step of the agent's actions in organized, timestamped folders
+- **📝 Flexible Query Input**: Pass queries directly as arguments (no `--query` flag required!) or point to text/markdown files to reuse prompts
+- **📱 Mobile Device Emulation**: Test mobile experiences with the `--mobile` flag, which simulates mobile viewport, touch events, and user agents
+- **🎯 Custom Screenshot Capture**: The agent can now call `take_screenshot(filename="name.png")` to save screenshots with custom names at any point during execution
+
+These enhancements make it easier to debug agent behavior, reuse prompts, and test across different device types—all while maintaining full compatibility with the original project.
+
+---
+
 ## Quick Start
 
 This section will guide you through setting up and running the Computer Use Preview model, either the Gemini Developer API or Vertex AI. Follow these steps to get started.
